@@ -1,7 +1,57 @@
-User Registration
-"C:\Users\farah\Downloads\User.png"
-Place Creation
+## 1) User Registration sequence
+![User Registration](part1/images/User.png)
 
-Review Submission
+**Process:**
+1. Client App sends **Create User** request to the API.
+2. API calls `create_user()` in Business Logic.
+3. Business Logic **validates user data**.
+4. If **valid** → save user data → return **User created confirmation**.
+5. API returns **HTTP 201 Created** to the Client App.
 
-Fetch Places List
+**On failure:**
+1. Business Logic marks data as **invalid**.
+2. API returns **HTTP 400 Bad Request** to the Client App.
+
+---
+
+## 2) Place Creation sequence
+![Place Creation](part1/images/Places.png)
+
+**Process:**
+1. Client App sends **Create Listing** request to the API.
+2. API calls `create_listing(data)` in Business Logic.
+3. Business Logic **validates listing data** (integrity + business rules).
+4. If **valid** → save listing data → return **Listing save confirmation**.
+5. API returns **HTTP 201 Created** to the Client App.
+
+**On failure:**
+1. Business Logic declares **invalid data**.
+2. API returns **HTTP 400 Bad Request**.
+
+---
+
+## 3) Review Submission sequence
+![Review Submission](part1/images/Post.png)
+
+**Process:**
+1. Client App initiates **Review Submission** request to the API.
+2. API calls `post_review()` in Business Logic.
+3. Business Logic **validates review data**.
+4. If **valid** → save review → return **Review stored confirmation**.
+5. API returns **HTTP 201 Created**.
+
+**On failure:**
+1. Business Logic marks review as **invalid**.
+2. API returns **HTTP 400 Bad Request**.
+
+---
+
+## 4) Fetch Places List sequence
+![Fetch Places List](part1/images/Listing.png)
+
+**Process:**
+1. Client App sends **Fetch Place List** request to the API.
+2. API calls `get_places()` in Business Logic.
+3. Business Logic queries the Database for **all listings**.
+4. Database returns **list of listings**.
+5. API returns **HTTP 200 OK** with the **place list** to the Client App.
