@@ -1,13 +1,13 @@
 # UML Sequence Diagrams
 
 ## 1. User Registration
-![User Registration](https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/part1/images/User.png)
+![User Registration](https://i.postimg.cc/L8QkfMCX/User-Registration.png)
 
 ## 2. Review Submission
-![Review Submission](https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/part1/images/Review.png)
+![Review Submission](https://i.postimg.cc/wMkLBKR9/Review-Submission.png)
 
 ## 3. Place Creation
-![Place Creation](https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/part1/images/Place.png)
+![Place Creation](https://i.postimg.cc/mZ3Qj9XK/Place-Creation.png)
 
 ## 4. Fetching a List of Places
-![Fetching a List of Places](https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/part1/images/Listing.png)
+![Fetching a List of Places](https://i.postimg.cc/XJSCcNwV/Fetching-a-List-of-Places.png)
