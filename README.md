@@ -17,12 +17,11 @@ The documentation provides a detailed blueprint of the application's architectur
 ## 📂 Diagrams
 
 ### 1. High-Level Package Diagram
-![High-Level Package Diagram](diagrams/package_diagram.png)
-*Shows the layered architecture and how components interact via the Facade pattern.*
+![High Level Package Diagram](part1/High-Level%20Package%20Diagram.jpg)
 
 ### 2. Detailed Class Diagram
-![Detailed Class Diagram](diagrams/class_diagram.png)
-*Represents the core business logic entities, their attributes, and relationships.*
+![Class Diagram](part1/Class%20Diagram.jpg)
+
 
 ### 3. Sequence Diagrams
 #### a) User Registration
@@ -47,3 +46,4 @@ The documentation provides a detailed blueprint of the application's architectur
 ## Author
 - **Farah** — [@farahmzi](https://github.com/farahmzi)
 - **Abdullah** — [@Abdullah-aldafas](https://github.com/Abdullah-aldafas)
+- **Sara** - [@sarunh10](https://github.com/sarunh10)
