@@ -43,3 +43,7 @@ The documentation provides a detailed blueprint of the application's architectur
 - All diagrams follow UML notation standards.
 - The design is based on the given business rules and requirements.
 - This documentation will guide the implementation in later parts of the project.
+
+## Author
+- **Farah** — [@farahmzi](https://github.com/farahmzi)
+- **Abdullah** — [@Abdullah-aldafas](https://github.com/Abdullah-aldafas)
