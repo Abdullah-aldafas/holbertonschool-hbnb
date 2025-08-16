@@ -26,13 +26,13 @@ The documentation provides a detailed blueprint of the application's architectur
 
 ### 3. Sequence Diagrams
 #### a) User Registration
-![User Registration](diagrams/sequence_user_registration.png)
+![User Registration](https://i.postimg.cc/L8QkfMCX/User-Registration.png)
 #### b) Place Creation
-![Place Creation](diagrams/sequence_place_creation.png)
+![Place Creation](https://i.postimg.cc/mZ3Qj9XK/Place-Creation.png)
 #### c) Review Submission
-![Review Submission](diagrams/sequence_review_submission.png)
+![Review Submission](https://i.postimg.cc/wMkLBKR9/Review-Submission.png)
 #### d) Fetching a List of Places
-![Fetching Places](diagrams/sequence_fetch_places.png)
+![Fetching a List of Places](https://i.postimg.cc/XJSCcNwV/Fetching-a-List-of-Places.png)
 
 ## 🛠 Tools Used
 - **draw.io** – For creating UML diagrams.
