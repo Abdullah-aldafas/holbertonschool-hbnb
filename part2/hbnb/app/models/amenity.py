@@ -12,6 +12,6 @@ class Amenity:
         self.created_at = created_at or datetime.utcnow()
         self.updated_at = updated_at or datetime.utcnow()
 
-        if not name or len(name.strip()) > 50:
-            raise ValueError("name must be at most 50 characters")
+        if not name or not name.strip() or len(name.strip()) > 50:
+            raise ValueError("name is required and must be at most 50 characters")
         self.name = name.strip()

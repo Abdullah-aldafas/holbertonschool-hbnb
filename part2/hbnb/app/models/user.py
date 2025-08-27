@@ -26,3 +26,5 @@ class User:
 
         self.created_at = created_at or datetime.utcnow()
         self.updated_at = updated_at or datetime.utcnow()
+
+        Place = []
