@@ -4,7 +4,7 @@ class TestAPI(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
         self.client = self.app.test_client()
-    # ---------- USERS ----------
+    # ---------- USERS ---------
     def test_create_user_success(self):
         response = self.client.post('/api/v1/users/', json={
             "first_name": "John",
