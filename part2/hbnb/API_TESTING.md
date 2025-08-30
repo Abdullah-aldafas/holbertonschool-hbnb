@@ -1,214 +1,283 @@
+## HBnB API Testing Guide & Report
 
-HBnB API – Testing Report
-This report documents manual tests (cURL + Swagger UI) for Users, Places, Amenities, Reviews.
- Both successful and failing cases were executed to verify validation rules and status codes.
-Environment
-Base URL: http://localhost:5000
-Swagger UI: http://localhost:5000/api/v1/
+This document provides both the instructions for testing the HBnB API endpoints (Tasks 4–6) and the report of expected vs. actual results.
 
-1) Users
- Create user (success)
+Prerequisites
 
-curl -X POST "http://localhost:5000/api/v1/users/" \
--H "Content-Type: application/json" \
--d '{"first_name":"John","last_name":"Doe","email":"john@example.com"}'
-Expected: 201 Created
- Actual: ☐ Fill after run
- Notes: —
- Create user (invalid email / empty names)
+Make sure the Flask application is running:
 
-curl -X POST "http://localhost:5000/api/v1/users/" \
--H "Content-Type: application/json" \
--d '{"first_name":"","last_name":"","email":"invalid"}'
-Expected: 400 Bad Request
- Actual: ☐
- Notes: —
- Get all users
+cd part2/hbnb
+python run.py
 
-curl "http://localhost:5000/api/v1/users/"
-Expected: 200 OK + list
- Actual: ☐
- Get user by id
 
-curl "http://localhost:5000/api/v1/users/<user_id>"
-Expected: 200 OK (or 404 Not Found if missing)
- Actual: ☐
- Update user
+The server should start on http://localhost:5000
 
-curl -X PUT "http://localhost:5000/api/v1/users/<user_id>" \
--H "Content-Type: application/json" \
--d '{"first_name":"Jane","last_name":"Doe","email":"jane@example.com"}'
-Expected: 200 OK
- Actual: ☐
-2) Amenities
- Create amenity (success)
+Install required testing dependencies:
 
-curl -X POST "http://localhost:5000/api/v1/amenities/" \
--H "Content-Type: application/json" \
--d '{"name":"WiFi"}'
-Expected: 201 Created
- Actual: ☐
- Create amenity (empty name)
+pip install requests
 
-curl -X POST "http://localhost:5000/api/v1/amenities/" \
--H "Content-Type: application/json" \
--d '{"name":""}'
-Expected: 400 Bad Request
- Actual: ☐
- Get all amenities
+### Testing Methods
+1. Automated API Testing Script
 
-curl "http://localhost:5000/api/v1/amenities/"
-Expected: 200 OK
- Actual: ☐
- Get amenity by id
+Run the comprehensive API test script:
 
-curl "http://localhost:5000/api/v1/amenities/<amenity_id>"
-Expected: 200 OK (or 404)
- Actual: ☐
- Update amenity
+cd part2
+python test_api.py
 
-curl -X PUT "http://localhost:5000/api/v1/amenities/<amenity_id>" \
--H "Content-Type: application/json" \
--d '{"name":"Free WiFi"}'
-Expected: 200 OK
- Actual: ☐
-3) Places
-Create a valid user first and keep its id as <owner_id>.
- (Optionally) create an amenity and use its id in amenity_ids.
- Create place (success)
 
-curl -X POST "http://localhost:5000/api/v1/places/" \
--H "Content-Type: application/json" \
--d '{
-  "title": "Cozy Apartment",
-  "description": "A nice place to stay",
-  "price": 100.0,
-  "latitude": 25.0,
-  "longitude": 45.0,
-  "owner_id": "<owner_id>",
-  "amenity_ids": ["<amenity_id>"]
-}'
-Expected: 201 Created
- Actual: ☐
- Create place (negative price)
+This script tests:
 
-curl -X POST "http://localhost:5000/api/v1/places/" \
--H "Content-Type: application/json" \
--d '{
-  "title": "Bad Place",
-  "description": "Wrong price",
-  "price": -10,
-  "latitude": 25.0,
-  "longitude": 45.0,
-  "owner_id": "<owner_id>",
-  "amenity_ids": []
-}'
-Expected: 400 Bad Request
- Actual: ☐
- Get all places
+All User endpoints (POST, GET, PUT)
 
-curl "http://localhost:5000/api/v1/places/"
-Expected: 200 OK
- Actual: ☐
- Get place by id
+All Amenity endpoints (POST, GET, PUT)
 
-curl "http://localhost:5000/api/v1/places/<place_id>"
-Expected: 200 OK (or 404)
- Actual: ☐
- Update place
+All Place endpoints (POST, GET, PUT)
 
-curl -X PUT "http://localhost:5000/api/v1/places/<place_id>" \
--H "Content-Type: application/json" \
--d '{
-  "title": "Updated Cozy Apartment",
-  "description": "Even nicer",
-  "price": 120.0,
-  "latitude": 25.0,
-  "longitude": 45.0
-}'
-Expected: 200 OK
- Actual: ☐
-4) Reviews
-Create valid <user_id> and <place_id> first.
- Create review (success)
+All Review endpoints (POST, GET, PUT, DELETE)
 
-curl -X POST "http://localhost:5000/api/v1/reviews/" \
--H "Content-Type: application/json" \
--d '{
-  "text": "Great place to stay!",
-  "rating": 5,
-  "user_id": "<user_id>",
-  "place_id": "<place_id>"
-}'
-Expected: 201 Created
- Actual: ☐
- Create review (empty text)
+Validation and error handling
 
-curl -X POST "http://localhost:5000/api/v1/reviews/" \
--H "Content-Type: application/json" \
--d '{
-  "text": "",
-  "rating": 5,
-  "user_id": "<user_id>",
-  "place_id": "<place_id>"
-}'
-Expected: 400 Bad Request
- Actual: ☐
- Create review (invalid rating)
+Relationship integrity
 
-curl -X POST "http://localhost:5000/api/v1/reviews/" \
--H "Content-Type: application/json" \
--d '{
-  "text": "Bad rating",
-  "rating": 10,
-  "user_id": "<user_id>",
-  "place_id": "<place_id>"
-}'
-Expected: 400 Bad Request
- Actual: ☐
- Get all reviews
+2. ### Unit Tests
 
-curl "http://localhost:5000/api/v1/reviews/"
-Expected: 200 OK
- Actual: ☐
- Get review by id
+Run the model unit tests:
 
-curl "http://localhost:5000/api/v1/reviews/<review_id>"
-Expected: 200 OK (or 404)
- Actual: ☐
- Get reviews for a place
+cd part2
+python test_models.py
 
-curl "http://localhost:5000/api/v1/places/<place_id>/reviews"
-Expected: 200 OK (or 404 if place missing)
- Actual: ☐
- Update review (text & rating only)
 
-curl -X PUT "http://localhost:5000/api/v1/reviews/<review_id>" \
--H "Content-Type: application/json" \
--d '{
-  "text": "Excellent stay!",
-  "rating": 4
-}'
-Expected: 200 OK
- Actual: ☐
- Delete review
+This tests:
 
-curl -X DELETE "http://localhost:5000/api/v1/reviews/<review_id>"
-Expected: 200 OK
- Actual: ☐
-5) Summary Table
-EntityTest caseExpectedActualResultUsersCreate valid user201☐☐UsersCreate invalid user (bad email/empty)400☐☐UsersGet all / Get by id / Update200/404☐☐AmenitiesCreate valid / invalid (empty name)201/400☐☐AmenitiesGet all / Get by id / Update200/404☐☐PlacesCreate valid / invalid (neg. price)201/400☐☐PlacesGet all / Get by id / Update200/404☐☐ReviewsCreate valid / empty text / bad rating201/400☐☐ReviewsGet all / by id / by place200/404☐☐ReviewsUpdate (text/rating) / Delete200☐☐
-6) Notes & Issues
-Write any discrepancies or bugs found during testing here.
-Mention payloads that caused unexpected behavior.
-7) Swagger Verification
-Verified models and routes appear correctly under:
-/api/v1/users, /api/v1/places, /api/v1/amenities, /api/v1/reviews
-Example requests and schemas match implementation.
-8) How to Run Automated Tests (reference)
+Model validation
 
-# API tests
-python tests/test_api.py
+Attribute constraints
 
-# Model/Facade tests
-python tests/test_models.py
+Relationship handling
+
+Repository integration
+
+3. Manual Testing with cURL
+### User Endpoints
+
+Create User
+
+curl -X POST http://localhost:5000/api/v1/users/ \
+  -H "Content-Type: application/json" \
+  -d '{"first_name": "John", "last_name": "Doe", "email": "john@example.com"}'
+
+
+Get All Users
+
+curl http://localhost:5000/api/v1/users/
+
+
+Get User by ID
+
+curl http://localhost:5000/api/v1/users/{user_id}
+
+
+Update User
+
+curl -X PUT http://localhost:5000/api/v1/users/{user_id} \
+  -H "Content-Type: application/json" \
+  -d '{"first_name": "Jane", "last_name": "Doe", "email": "jane@example.com"}'
+
+### Amenity Endpoints
+
+Create Amenity
+
+curl -X POST http://localhost:5000/api/v1/amenities/ \
+  -H "Content-Type: application/json" \
+  -d '{"name": "WiFi"}'
+
+
+Get All Amenities
+
+curl http://localhost:5000/api/v1/amenities/
+
+
+Get Amenity by ID
+
+curl http://localhost:5000/api/v1/amenities/{amenity_id}
+
+
+Update Amenity
+
+curl -X PUT http://localhost:5000/api/v1/amenities/{amenity_id} \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Free WiFi"}'
+
+### Place Endpoints
+
+Create Place
+
+curl -X POST http://localhost:5000/api/v1/places/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Cozy Apartment",
+    "description": "A nice place to stay",
+    "price": 100.0,
+    "latitude": 25.0,
+    "longitude": 45.0,
+    "owner_id": "{user_id}",
+    "amenity_ids": ["{amenity_id}"]
+  }'
+
+
+Get All Places
+
+curl http://localhost:5000/api/v1/places/
+
+
+Get Place by ID
+
+curl http://localhost:5000/api/v1/places/{place_id}
+
+
+Update Place
+
+curl -X PUT http://localhost:5000/api/v1/places/{place_id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Cozy Apartment",
+    "description": "Even nicer",
+    "price": 120.0,
+    "latitude": 25.0,
+    "longitude": 45.0
+  }'
+
+### Review Endpoints
+
+Create Review
+
+curl -X POST http://localhost:5000/api/v1/reviews/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Great place to stay!",
+    "rating": 5,
+    "user_id": "{user_id}",
+    "place_id": "{place_id}"
+  }'
+
+
+Get All Reviews
+
+curl http://localhost:5000/api/v1/reviews/
+
+
+Get Review by ID
+
+curl http://localhost:5000/api/v1/reviews/{review_id}
+
+
+Get Reviews for a Place
+
+curl http://localhost:5000/api/v1/places/{place_id}/reviews
+
+
+Update Review
+
+curl -X PUT http://localhost:5000/api/v1/reviews/{review_id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Excellent place to stay!",
+    "rating": 4
+  }'
+
+
+Delete Review
+
+curl -X DELETE http://localhost:5000/api/v1/reviews/{review_id}
+
+### Swagger Documentation
+
+Access the interactive API documentation at:
+
+http://localhost:5000/api/v1/
+
+
+Provides:
+
+Complete API specification
+
+Interactive testing interface
+
+Request/response examples
+
+Model schemas
+
+Validation Rules
+User
+
+first_name: Required, max 50 characters
+
+last_name: Required, max 50 characters
+
+email: Required, valid format, unique
+
+is_admin: Boolean, default False
+
+Place
+
+title: Required, max 100 characters
+
+description: Optional
+
+price: Positive float
+
+latitude: -90 to 90
+
+longitude: -180 to 180
+
+owner_id: Must reference existing user
+
+amenity_ids: Optional list of amenity IDs
+
+Review
+
+text: Required, non-empty
+
+rating: 1–5 integer
+
+user_id: Must reference existing user
+
+place_id: Must reference existing place
+
+Amenity
+
+name: Required, non-empty, max 50 chars
+
+Expected Response Formats
+
+Success
+
+200: Resource retrieved
+
+201: Resource created
+
+Errors
+
+400: Invalid input
+
+404: Not found
+
+500: Server error
+
+### Testing Report
+Entity	Test Case	Expected	Actual	Result
+Users	Create valid user	201	☐	☐
+Users	Create invalid user (bad email)	400	☐	☐
+Users	Get all / Get by id / Update	200/404	☐	☐
+Amenities	Create valid / invalid amenity	201/400	☐	☐
+Amenities	Get all / Get by id / Update	200/404	☐	☐
+Places	Create valid / invalid place	201/400	☐	☐
+Places	Get all / Get by id / Update	200/404	☐	☐
+Reviews	Create valid / empty / bad rating	201/400	☐	☐
+Reviews	Get all / by id / by place	200/404	☐	☐
+Reviews	Update (text/rating) / Delete	200	☐	☐
+Notes
+
+Replace {user_id}, {place_id}, {amenity_id}, {review_id} with actual IDs after creating records.
+
+Fill in Actual and Result columns after running tests.
