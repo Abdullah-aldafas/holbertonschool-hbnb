@@ -104,4 +104,6 @@ class PlaceResource(Resource):
             'amenities': [
                 {'id': a.id, 'name': a.name} for a in (p.amenities or [])
             ],
-            'created_at': p.created_at.i
+            'created_at': p.created_at.isoformat(),
+            'updated_at': p.updated_at.isoformat(),
+        }, 200 

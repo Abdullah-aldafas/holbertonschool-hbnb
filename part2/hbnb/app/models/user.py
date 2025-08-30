@@ -27,4 +27,15 @@ class User:
         self.created_at = created_at or datetime.utcnow()
         self.updated_at = updated_at or datetime.utcnow()
 
-        Place = []
+        self.places = []
+
+    def add_place(self, place):
+        """Add a place to the user's owned places"""
+        self.places.append(place)
+
+    def update(self, data):
+        """Update the attributes of the object"""
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.save()  # Update the updated_at timestamp

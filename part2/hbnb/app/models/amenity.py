@@ -12,6 +12,18 @@ class Amenity:
         self.created_at = created_at or datetime.utcnow()
         self.updated_at = updated_at or datetime.utcnow()
 
-        if not name or not name.strip() or len(name.strip()) > 50:
+        if name:
+            name = name.strip()
+        else:
+            name = ""
+        if not name or len(name) > 50:
             raise ValueError("name is required and must be at most 50 characters")
-        self.name = name.strip()
+        self.name = name
+        
+
+    def update(self, data):
+        """Update the attributes of the object"""
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.save()  # Update the updated_at timestamp
