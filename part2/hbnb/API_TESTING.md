@@ -16,7 +16,7 @@ Install required testing dependencies:
 
 pip install requests
 
-### Testing Methods
+## Testing Methods
 1. Automated API Testing Script
 
 Run the comprehensive API test script:
@@ -39,7 +39,7 @@ Validation and error handling
 
 Relationship integrity
 
-2. ### Unit Tests
+2. ## Unit Tests
 
 Run the model unit tests:
 
@@ -58,7 +58,7 @@ Relationship handling
 Repository integration
 
 3. Manual Testing with cURL
-### User Endpoints
+## User Endpoints
 
 Create User
 
@@ -83,7 +83,7 @@ curl -X PUT http://localhost:5000/api/v1/users/{user_id} \
   -H "Content-Type: application/json" \
   -d '{"first_name": "Jane", "last_name": "Doe", "email": "jane@example.com"}'
 
-### Amenity Endpoints
+## Amenity Endpoints
 
 Create Amenity
 
@@ -108,7 +108,7 @@ curl -X PUT http://localhost:5000/api/v1/amenities/{amenity_id} \
   -H "Content-Type: application/json" \
   -d '{"name": "Free WiFi"}'
 
-### Place Endpoints
+## Place Endpoints
 
 Create Place
 
@@ -147,7 +147,7 @@ curl -X PUT http://localhost:5000/api/v1/places/{place_id} \
     "longitude": 45.0
   }'
 
-### Review Endpoints
+## Review Endpoints
 
 Create Review
 
@@ -190,7 +190,7 @@ Delete Review
 
 curl -X DELETE http://localhost:5000/api/v1/reviews/{review_id}
 
-### Swagger Documentation
+## Swagger Documentation
 
 Access the interactive API documentation at:
 
@@ -264,20 +264,22 @@ Errors
 
 500: Server error
 
-### Testing Report
-Entity	Test Case	Expected	Actual	Result
-Users	Create valid user	201	☐	☐
-Users	Create invalid user (bad email)	400	☐	☐
-Users	Get all / Get by id / Update	200/404	☐	☐
-Amenities	Create valid / invalid amenity	201/400	☐	☐
-Amenities	Get all / Get by id / Update	200/404	☐	☐
-Places	Create valid / invalid place	201/400	☐	☐
-Places	Get all / Get by id / Update	200/404	☐	☐
-Reviews	Create valid / empty / bad rating	201/400	☐	☐
-Reviews	Get all / by id / by place	200/404	☐	☐
-Reviews	Update (text/rating) / Delete	200	☐	☐
-Notes
+## Testing Report
 
-Replace {user_id}, {place_id}, {amenity_id}, {review_id} with actual IDs after creating records.
+| Entity     | Test Case                              | Expected | Actual | Result |
+|------------|----------------------------------------|----------|--------|--------|
+| Users      | Create valid user                      | 201      | ☐      | ☐ |
+| Users      | Create invalid user (bad email)        | 400      | ☐      | ☐ |
+| Users      | Get all / Get by id / Update           | 200/404  | ☐      | ☐ |
+| Amenities  | Create valid / invalid amenity         | 201/400  | ☐      | ☐ |
+| Amenities  | Get all / Get by id / Update           | 200/404  | ☐      | ☐ |
+| Places     | Create valid / invalid place           | 201/400  | ☐      | ☐ |
+| Places     | Get all / Get by id / Update           | 200/404  | ☐      | ☐ |
+| Reviews    | Create valid / empty / bad rating      | 201/400  | ☐      | ☐ |
+| Reviews    | Get all / by id / by place             | 200/404  | ☐      | ☐ |
+| Reviews    | Update (text/rating) / Delete          | 200      | ☐      | ☐ |
 
-Fill in Actual and Result columns after running tests.
+### Notes
+- Replace `{user_id}`, `{place_id}`, `{amenity_id}`, `{review_id}` with actual IDs after creating records.
+- Fill in **Actual** and **Result** after running the tests (e.g., `201` / `✅`).
+
