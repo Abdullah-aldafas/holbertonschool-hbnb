@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 
@@ -65,7 +64,7 @@ class UserResource(Resource):
     @api.response(400, 'Invalid data')
     def put(self, user_id):
         
-        data = request.get_json() or {}
+        data = api.payload or {} 
         try:
             u = facade.update_user(user_id, data)
             if not u:

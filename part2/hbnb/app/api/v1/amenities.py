@@ -1,4 +1,3 @@
-from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 
@@ -63,7 +62,7 @@ class AmenityResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
         """Update an amenity's information"""
-        data = request.get_json() or {}
+        data = api.payload or {}
         try:
             a = facade.update_amenity(amenity_id, data)
             if not a:
