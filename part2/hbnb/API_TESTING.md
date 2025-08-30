@@ -39,7 +39,7 @@ Validation and error handling
 
 Relationship integrity
 
-2. ## Unit Tests
+ ## Unit Tests
 
 Run the model unit tests:
 
