@@ -169,4 +169,61 @@ class HBnBFacade:
         amenity.updated_at = datetime.utcnow()
         return amenity 
 
-    
+    # Review methods
+    def create_review(self, review_data):
+        # تحقق من user و place
+        user = self.user_repo.get(review_data.get('user_id'))
+        if not user:
+            raise ValueError("User not found")
+
+        place = self.place_repo.get(review_data.get('place_id'))
+        if not place:
+            raise ValueError("Place not found")
+
+        rating = int(review_data.get('rating', 0))
+        if rating < 1 or rating > 5:
+            raise ValueError("rating must be between 1 and 5")
+
+        text = str(review_data.get('text', '')).strip()
+        if not text:
+            raise ValueError("text cannot be empty")
+
+        review = Review(**review_data)
+        self.review_repo.add(review)
+        return review
+
+    def get_review(self, review_id):
+        return self.review_repo.get(review_id)
+
+    def get_all_reviews(self):
+        return self.review_repo.get_all()
+
+    def get_reviews_by_place(self, place_id):
+        return [r for r in self.review_repo.get_all() if r.place_id == place_id]
+
+    def update_review(self, review_id, data):
+        review = self.review_repo.get(review_id)
+        if not review:
+            return None
+
+        if 'text' in data and data['text'] is not None:
+            text = str(data['text']).strip()
+            if not text or len(text) > 1000:
+                raise ValueError("text must be at most 1000 characters")
+            review.text = text
+
+        if 'rating' in data and data['rating'] is not None:
+            rating = int(data['rating'])
+            if rating < 1 or rating > 5:
+                raise ValueError("rating must be between 1 and 5")
+            review.rating = rating
+
+        review.updated_at = datetime.utcnow()
+        return review
+
+    def delete_review(self, review_id):
+        review = self.review_repo.get(review_id)
+        if not review:
+            return None
+        self.review_repo.delete(review_id)
+        return review
