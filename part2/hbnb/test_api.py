@@ -27,25 +27,25 @@ class TestAPI(unittest.TestCase):
             "email": "owner@example.com"
         }).get_json()
         owner_id = user["id"]
-        response = self.client.post('/api/v1/places/', json={
+        response = self.client.post('/api/v1/places/', json={
             "title": "Villa",
             "description": "Nice place",
             "price": 120,
             "latitude": 25.0,
             "longitude": 45.0,
             "owner_id": owner_id,
-            "amenity_ids": []
+            "amenities": []
         })
         self.assertEqual(response.status_code, 201)
     def test_create_place_invalid_price(self):
-        response = self.client.post('/api/v1/places/', json={
+        response = self.client.post('/api/v1/places/', json={
             "title": "Bad Place",
             "description": "Invalid price",
             "price": -50,
             "latitude": 25.0,
             "longitude": 45.0,
             "owner_id": "fake",
-            "amenity_ids": []
+            "amenities": []
         })
         self.assertEqual(response.status_code, 400)
     # ---------- REVIEWS ----------

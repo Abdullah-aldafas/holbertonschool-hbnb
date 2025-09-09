@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 
 from datetime import datetime
-import uuid
+from app.models.base_model import BaseModel
 
-class User:
+class User(BaseModel):
     def __init__(self,first_name: str,last_name:str,email:str,
     is_admin: bool= False,
     id: str = None,
     created_at: datetime = None,
     updated_at: datetime = None):
-        self.id = id or str(uuid.uuid4())
+        super().__init__(id=id, created_at=created_at, updated_at=updated_at)
 
         if not first_name or len(first_name) > 50:
             raise ValueError("first_name must be at most 50 characters")
@@ -24,9 +24,6 @@ class User:
 
         self.is_admin = bool(is_admin)
 
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
-
         self.places = []
 
     def add_place(self, place):
@@ -35,7 +32,4 @@ class User:
 
     def update(self, data):
         """Update the attributes of the object"""
-        for key, value in data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        self.save()  # Update the updated_at timestamp
+        super().update(data)

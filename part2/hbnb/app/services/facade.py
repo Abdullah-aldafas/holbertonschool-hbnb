@@ -5,8 +5,12 @@ from app.models.place import Place
 from app.models.review import Review
 from app.models.amenity import Amenity
 
+
 class HBnBFacade:
+    """Facade coordinating business logic across repositories and models."""
+
     def __init__(self):
+        """Initialize in-memory repositories for all entities."""
         self.user_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
         self.review_repo = InMemoryRepository()
@@ -14,6 +18,7 @@ class HBnBFacade:
 
     # User methods
     def create_user(self, user_data): 
+        """Create a new user with validation and email normalization."""
         if 'email' in user_data and user_data['email']:
             user_data['email'] = user_data['email'].strip().lower()
        
@@ -25,17 +30,21 @@ class HBnBFacade:
         return user
 
     def get_user(self, user_id):
+        """Retrieve a user by id or None if missing."""
         return self.user_repo.get(user_id)
 
     def get_user_by_email(self, email):
+        """Find a user by email or return None if not found."""
         if not email:
             return None
         return self.user_repo.get_by_attribute('email', email.strip().lower())
 
     def list_users(self):
+        """Return all users."""
         return self.user_repo.get_all()
 
     def update_user(self, user_id: str, data: dict):
+        """Update user fields with validation; return updated user or None."""
         user = self.user_repo.get(user_id)
         if not user:
             return None
@@ -70,36 +79,46 @@ class HBnBFacade:
 
     # Place methods
     def create_place(self, place_data):
-    # 1. owner_id → User object
-        owner_id = place_data.pop('owner_id', None)
+        """Create a place after validating owner_id and amenities IDs."""
+        # Validate owner exists (we still store owner_id on the model)
+        owner_id = place_data.get('owner_id')
         if not owner_id:
             raise ValueError("owner_id is required")
-        owner = self.user_repo.get(owner_id)
-        if not owner:
+        if not self.user_repo.get(owner_id):
             raise ValueError("Owner not found")
 
-    # 2. amenity_ids → Amenity objects
-        amenity_ids = place_data.pop('amenity_ids', [])
-        amenities = []
+        # Normalize amenities key and validate each amenity id
+        amenity_ids = place_data.get('amenities', [])
+        valid_ids = []
         for aid in amenity_ids:
-            amenity = self.amenity_repo.get(aid)
-        if not amenity:
-            raise ValueError(f"Amenity not found: {aid}")
-        amenities.append(amenity)
+            if not self.amenity_repo.get(aid):
+                raise ValueError(f"Amenity not found: {aid}")
+            valid_ids.append(aid)
 
-        # 3. أنشئ الـ Place مع الكائنات بدل IDs
-        place = Place(**place_data, owner=owner, amenities=amenities)
+        # Build Place with IDs (owner_id and amenities as list of ids)
+        place = Place(
+            title=place_data.get('title'),
+            description=place_data.get('description'),
+            price=place_data.get('price'),
+            latitude=place_data.get('latitude'),
+            longitude=place_data.get('longitude'),
+            owner_id=owner_id,
+            amenities=valid_ids,
+        )
         self.place_repo.add(place)
         return place
     
 
     def get_place(self, place_id):
+        """Retrieve a place by id or None."""
         return self.place_repo.get(place_id)
 
     def get_all_places(self):
+        """Return all places."""
         return self.place_repo.get_all()
 
     def update_place(self, place_id: str, data: dict):
+        """Update place fields with validation; return updated place or None."""
         place = self.place_repo.get(place_id)
         if not place:
             return None
@@ -144,17 +163,21 @@ class HBnBFacade:
 
     # Amenity methods
     def create_amenity(self, amenity_data):
+        """Create a new amenity after validating name."""
         amenity = Amenity(**amenity_data)
         self.amenity_repo.add(amenity)
         return amenity
 
     def get_amenity(self, amenity_id):
+        """Retrieve an amenity by id or None."""
         return self.amenity_repo.get(amenity_id)
 
     def get_all_amenities(self):
+        """Return all amenities."""
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, data):
+        """Update an amenity's fields with validation; return updated amenity or None."""
         amenity = self.amenity_repo.get(amenity_id)
         if not amenity:
             return None
@@ -171,13 +194,13 @@ class HBnBFacade:
 
     # Review methods
     def create_review(self, review_data):
-        # تحقق من user و place
-        user = self.user_repo.get(review_data.get('user_id'))
-        if not user:
+        """Create a review after validating user/place existence and rating/text."""
+        # Validate foreign keys
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
+        if not self.user_repo.get(user_id):
             raise ValueError("User not found")
-
-        place = self.place_repo.get(review_data.get('place_id'))
-        if not place:
+        if not self.place_repo.get(place_id):
             raise ValueError("Place not found")
 
         rating = int(review_data.get('rating', 0))
@@ -188,20 +211,29 @@ class HBnBFacade:
         if not text:
             raise ValueError("text cannot be empty")
 
-        review = Review(**review_data)
+        review = Review(
+            text=text,
+            rating=rating,
+            user_id=user_id,
+            place_id=place_id,
+        )
         self.review_repo.add(review)
         return review
 
     def get_review(self, review_id):
+        """Retrieve a review by id or None."""
         return self.review_repo.get(review_id)
 
     def get_all_reviews(self):
+        """Return all reviews."""
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
+        """Return all reviews that belong to the given place_id."""
         return [r for r in self.review_repo.get_all() if r.place_id == place_id]
 
     def update_review(self, review_id, data):
+        """Update review fields with validation; return updated review or None."""
         review = self.review_repo.get(review_id)
         if not review:
             return None
@@ -222,6 +254,7 @@ class HBnBFacade:
         return review
 
     def delete_review(self, review_id):
+        """Delete a review by id; return deleted review or None if missing."""
         review = self.review_repo.get(review_id)
         if not review:
             return None

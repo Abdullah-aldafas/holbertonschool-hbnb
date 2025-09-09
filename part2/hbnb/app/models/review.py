@@ -1,18 +1,15 @@
 #!/usr/bin/python3
 
 from datetime import datetime
-import uuid
-from app.models.user import User
-from app.models.place import Place
+from app.models.base_model import BaseModel
+from typing import Optional
 
-class Review:
-    def __init__(self, text: str, rating: int, place: Place, user: User,
-                 id: str = None,
-                 created_at: datetime = None,
-                 updated_at: datetime = None):
-        self.id = id or str(uuid.uuid4())
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
+class Review(BaseModel):
+    def __init__(self, text: str, rating: int, place_id: str, user_id: str,
+                 id: Optional[str] = None,
+                 created_at: Optional[datetime] = None,
+                 updated_at: Optional[datetime] = None):
+        super().__init__(id=id, created_at=created_at, updated_at=updated_at)
 
         if not text or not str(text).strip():
             raise ValueError("text is required")
@@ -26,17 +23,13 @@ class Review:
             raise ValueError("rating must be between 1 and 5")
         self.rating = rating
 
-        if not isinstance(place, Place):
-            raise TypeError("place must be a Place instance")
-        if not isinstance(user, User):
-            raise TypeError("user must be a User instance")
-
-        self.place = place
-        self.user = user
+        if not place_id or not str(place_id).strip():
+            raise ValueError("place_id is required")
+        if not user_id or not str(user_id).strip():
+            raise ValueError("user_id is required")
+        self.place_id = str(place_id).strip()
+        self.user_id = str(user_id).strip()
 
     def update(self, data):
         """Update the attributes of the object"""
-        for key, value in data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        self.save()  # Update the updated_at timestamp
+        super().update(data)

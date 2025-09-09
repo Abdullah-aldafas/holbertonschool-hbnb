@@ -1,18 +1,17 @@
 #!/usr/bin/python3
 
 from datetime import datetime
-import uuid
-from app.models.user import User
+from app.models.base_model import BaseModel
+from typing import List
 
-class Place:
+class Place(BaseModel):
     def __init__(self, title: str, description: str, price: float,
-                 latitude: float, longitude: float, owner: User,
+                 latitude: float, longitude: float, owner_id: str,
+                 amenities: List[str] = None,
                  id: str = None,
                  created_at: datetime = None,
                  updated_at: datetime = None):
-        self.id = id or str(uuid.uuid4())
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
+        super().__init__(id=id, created_at=created_at, updated_at=updated_at)
 
         if not title or len(title.strip()) > 100:
             raise ValueError("title must be at most 100 characters")
@@ -37,24 +36,21 @@ class Place:
         if not (-180.0 <= self.longitude <= 180.0):
             raise ValueError("longitude must be between -180 and 180")
 
-        if not isinstance(owner, User):
-            raise TypeError("owner must be a User instance")
-        self.owner = owner
+        if not owner_id or not str(owner_id).strip():
+            raise ValueError("owner_id is required")
+        self.owner_id = str(owner_id).strip()
 
-        self.reviews = []
-        self.amenities = []
+        self.reviews = []  # list of review IDs (optional future use)
+        self.amenities = [str(aid) for aid in (amenities or [])]
 
     def add_review(self, review):
         """Add a review to the place."""
         self.reviews.append(review)
 
-    def add_amenity(self, amenity):
-        """Add an amenity to the place."""
-        self.amenities.append(amenity)
+    def add_amenity(self, amenity_id: str):
+        """Add an amenity id to the place."""
+        self.amenities.append(str(amenity_id))
 
     def update(self, data):
         """Update the attributes of the object"""
-        for key, value in data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        self.save()  # Update the updated_at timestamp
+        super().update(data)

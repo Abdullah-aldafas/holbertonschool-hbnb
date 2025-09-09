@@ -54,20 +54,37 @@ class PlaceList(Resource):
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
-        """Retrieve a list of all places"""
+        """Retrieve a list of all places with expanded owner and amenities"""
         places = facade.get_all_places()
-        return [{
-            'id': p.id,
-            'title': p.title,
-            'description': p.description,
-            'price': p.price,
-            'latitude': p.latitude,
-            'longitude': p.longitude,
-            'owner_id': p.owner_id,
-            'amenities': p.amenities,
-            'created_at': p.created_at.isoformat(),
-            'updated_at': p.updated_at.isoformat(),
-        } for p in places], 200
+        result = []
+        for p in places:
+            owner = facade.get_user(p.owner_id)
+            owner_data = None
+            if owner:
+                owner_data = {
+                    'id': owner.id,
+                    'first_name': owner.first_name,
+                    'last_name': owner.last_name,
+                    'email': owner.email,
+                }
+            amenity_items = []
+            for aid in (p.amenities or []):
+                a = facade.get_amenity(aid)
+                if a:
+                    amenity_items.append({'id': a.id, 'name': a.name})
+            result.append({
+                'id': p.id,
+                'title': p.title,
+                'description': p.description,
+                'price': p.price,
+                'latitude': p.latitude,
+                'longitude': p.longitude,
+                'owner': owner_data,
+                'amenities': amenity_items,
+                'created_at': p.created_at.isoformat(),
+                'updated_at': p.updated_at.isoformat(),
+            })
+        return result, 200
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
@@ -78,6 +95,20 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'error': 'Place not found'}, 404
+        owner = facade.get_user(place.owner_id)
+        owner_data = None
+        if owner:
+            owner_data = {
+                'id': owner.id,
+                'first_name': owner.first_name,
+                'last_name': owner.last_name,
+                'email': owner.email,
+            }
+        amenity_items = []
+        for aid in (place.amenities or []):
+            a = facade.get_amenity(aid)
+            if a:
+                amenity_items.append({'id': a.id, 'name': a.name})
         return {
             'id': place.id,
             'title': place.title,
@@ -85,8 +116,8 @@ class PlaceResource(Resource):
             'price': place.price,
             'latitude': place.latitude,
             'longitude': place.longitude,
-            'owner_id': place.owner_id,
-            'amenities': place.amenities,
+            'owner': owner_data,
+            'amenities': amenity_items,
             'created_at': place.created_at.isoformat(),
             'updated_at': place.updated_at.isoformat(),
         }, 200
