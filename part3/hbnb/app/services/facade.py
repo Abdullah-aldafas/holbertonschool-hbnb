@@ -25,6 +25,7 @@ class HBnBFacade:
         if self.get_user_by_email(user_data.get('email')):
             raise ValueError("Email already registered")
 
+        # Ensure password gets hashed by the model
         user = User(**user_data)
         self.user_repo.add(user)
         return user

@@ -9,6 +9,7 @@ user_model = api.model('User', {
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user'),
     'is_admin': fields.Boolean(required=False, description='Admin flag', default=False),
+    'password': fields.String(required=True, description='Password (will be hashed)')
 })
 
 @api.route('/')
@@ -20,6 +21,8 @@ class UserList(Resource):
     def post(self):
         
         data = api.payload or {}
+        if 'password' not in data or not data['password']:
+            return {'error': 'Password is required'}, 400
        
         if facade.get_user_by_email(data['email']):
             return {'error': 'Email already registered'}, 400
