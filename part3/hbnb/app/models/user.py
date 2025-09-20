@@ -1,54 +1,44 @@
-#!/usr/bin/python3
 
-from datetime import datetime
-from app.models.base_model import BaseModel
-from app import bcrypt
+from app.models.basemodel import BaseModel
+from app.extensions import db
+import app
 
 class User(BaseModel):
-    def __init__(self,first_name: str,last_name:str,email:str,
-    is_admin: bool= False,
-    id: str = None,
-    created_at: datetime = None,
-    updated_at: datetime = None,
-    password: str = None):
-        super().__init__(id=id, created_at=created_at, updated_at=updated_at)
+    __tablename__ = 'users'
 
-        if not first_name or len(first_name) > 50:
-            raise ValueError("first_name must be at most 50 characters")
-        self.first_name = first_name.strip()
-        if not last_name or len(last_name) > 50:
-            raise ValueError("last_name must be at most 50 characters")
-        self.last_name = last_name.strip()
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), nullable=False, unique=True)
+    password = db.Column(db.String(128), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
 
-        if "@" not in email or "." not in email:
-            raise ValueError("Invalid email address")
-        self.email = email.strip().lower()
-
-        self.is_admin = bool(is_admin)
-
-        # Store hashed password (if provided, hash on init)
-        self.password = None
-        if password:
-            self.hash_password(password)
-
-        self.places = []
-
-    def add_place(self, place):
-        """Add a place to the user's owned places"""
-        self.places.append(place)
-
-    def update(self, data):
-        """Update the attributes of the object"""
-        super().update(data)
+    @staticmethod
+    def init_relationships():
+        from app.models.places import Place
+        from app.models.reviews import Review
+        place = db.relationship(Place, backref="user", lazy=True)
+        review = db.relationship(Review, backref="user", lazy=True)
+    
+    def __init__(self, first_name, last_name, email, password, is_admin):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = self.hash_password(password)
+        self.is_admin = is_admin
 
     def hash_password(self, password):
-        """Hashes the password before storing it."""
-        if password is None:
-            return
-        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
-
+        return app.bcrypt.generate_password_hash(password).decode('utf-8')
+    
     def verify_password(self, password):
-        """Verifies if the provided password matches the hashed password."""
-        if not self.password:
-            return False
-        return bcrypt.check_password_hash(self.password, password)
+        return app.bcrypt.check_password_hash(self.password, password)
+
+    def to_dict(self):
+        """Convert the User instance into a dictionary."""
+        base_dict = super().to_dict()
+        base_dict.update({
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "is_admin": self.is_admin
+        })
+        return base_dict
