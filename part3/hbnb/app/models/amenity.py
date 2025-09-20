@@ -1,24 +1,26 @@
-#!/usr/bin/python3
+from app.models.basemodel import BaseModel
+from app.extensions import db
 
-from datetime import datetime
-from app.models.base_model import BaseModel
 
 class Amenity(BaseModel):
-    def __init__(self, name: str,
-                 id: str = None,
-                 created_at: datetime = None,
-                 updated_at: datetime = None):
-        super().__init__(id=id, created_at=created_at, updated_at=updated_at)
+    __tablename__ = "amenities"
 
-        if name:
-            name = name.strip()
-        else:
-            name = ""
-        if not name or len(name) > 50:
-            raise ValueError("name is required and must be at most 50 characters")
+    name = db.Column(db.String(155), nullable=False)
+
+    @staticmethod
+    def init_relationships():
+        from app.models.place_amenity import PlaceAmenity
+        from app.models.places import Place
+        places = db.relationship(Place, secondary=PlaceAmenity, backref=db.backref('amenity', lazy=True), lazy=True
+    )
+    
+    def __init__(self, name):
+        super().__init__()
         self.name = name
-        
 
-    def update(self, data):
-        """Update the attributes of the object"""
-        super().update(data)
+    def to_dict(self):
+        base_dict = super().to_dict()
+        base_dict.update({
+            "name": self.name
+        })
+        return base_dict
