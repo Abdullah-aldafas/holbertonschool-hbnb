@@ -1,35 +1,40 @@
-#!/usr/bin/python3
-
-from datetime import datetime
-from app.models.base_model import BaseModel
-from typing import Optional
+from app.models.basemodel import BaseModel
+from app.extensions import db
+from app.models.users import User
+from app.models.places import Place
 
 class Review(BaseModel):
-    def __init__(self, text: str, rating: int, place_id: str, user_id: str,
-                 id: Optional[str] = None,
-                 created_at: Optional[datetime] = None,
-                 updated_at: Optional[datetime] = None):
-        super().__init__(id=id, created_at=created_at, updated_at=updated_at)
+    __tablename__ = "reviews"
 
-        if not text or not str(text).strip():
-            raise ValueError("text is required")
-        self.text = str(text).strip()
+    text = db.Column(db.String(155), nullable=False)
+    rating = db.Column(db.Integer(), nullable=False)
+    place_id = db.Column(db.String(36), db.ForeignKey('places.id'), unique=False, nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), unique=False, nullable=False)
 
-        try:
-            rating = int(rating)
-        except (TypeError, ValueError):
-            raise ValueError("rating must be an integer")
-        if not (1 <= rating <= 5):
-            raise ValueError("rating must be between 1 and 5")
+    @staticmethod
+    def init_relationships():
+        from app.models.places import Place
+        from app.models.users import User
+        place = db.relationship(Place, backref="review", lazy=True)
+        user = db.relationship(User, backref="review", lazy=True) 
+
+    def __init__(self, text, rating, place_id, user_id):
+        super().__init__()
+        self.text= text
         self.rating = rating
+        self.place_id = place_id
+        self.user_id = user_id
 
-        if not place_id or not str(place_id).strip():
-            raise ValueError("place_id is required")
-        if not user_id or not str(user_id).strip():
-            raise ValueError("user_id is required")
-        self.place_id = str(place_id).strip()
-        self.user_id = str(user_id).strip()
-
-    def update(self, data):
-        """Update the attributes of the object"""
-        super().update(data)
+    def to_dict(self):
+        from app.service import facade
+        """Convert the User instance into a dictionary."""
+        base_dict = super().to_dict()
+        user: User = facade.get_user(self.user_id)
+        place: Place = facade.get_place(self.place_id)
+        base_dict.update({
+            "text": self.text,
+            "rating": self.rating,
+            "place_id": place.to_dict(),
+            "user_id": user.to_dict()
+        })
+        return base_dict
