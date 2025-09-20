@@ -1,6 +1,7 @@
-#!/usr/bin/python3
-from flask_restx import Namespace, Resource, fields
-from app.services import facade
+from flask_restx import fields, Namespace, Resource
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.service import facade
+from app.models.users import User
 
 api = Namespace('users', description='User operations')
 
@@ -8,74 +9,86 @@ user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user'),
-    'is_admin': fields.Boolean(required=False, description='Admin flag', default=False),
-    'password': fields.String(required=True, description='Password (will be hashed)')
+    'password': fields.String(required=True, description='Password of the user'),
+    'is_admin': fields.Boolean(required=True, description='checking is admin or not', default=False)
 })
 
 @api.route('/')
 class UserList(Resource):
     @api.expect(user_model, validate=True)
-    @api.response(201, 'User successfully created')
-    @api.response(400, 'Email already registered')
-    @api.response(400, 'Invalid input data')
+    @api.response(400, 'Email already exists')
+    @api.response(200, 'User added successfully')
+    @jwt_required()
     def post(self):
-        
-        data = api.payload or {}
-        if 'password' not in data or not data['password']:
-            return {'error': 'Password is required'}, 400
-       
-        if facade.get_user_by_email(data['email']):
-            return {'error': 'Email already registered'}, 400
-       
-        data['email'] = data['email'].strip().lower()
-        user = facade.create_user(data)
-        return {
-            'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name,
-            'email': user.email, 'is_admin': user.is_admin,
-            'created_at': user.created_at.isoformat(), 'updated_at': user.updated_at.isoformat(),
-        }, 201
+        current_user = get_jwt_identity()
+        user_data = api.payload
 
-    @api.response(200, 'Users retrieved')
+        if not facade.get_user(current_user).is_admin:
+            return {'error': 'Admin privileges required'}, 403
+        
+        existing_user = facade.get_user_by_email(user_data['email'])
+        if existing_user:
+            return {'error': 'Email already exists'}, 400
+        
+        new_user = facade.add_user(user_data)
+        return new_user.to_dict(), 200
+    
+    @api.response(400, 'List is empty')
+    @api.response(200, 'List retrieved successfully')
     def get(self):
+        users = facade.get_all_users()
+        if users:
+            data = []
+            for user in users:
+                data.append(user.to_dict())
+            return data, 200
         
-        users = facade.list_users()
-        return [{
-            'id': u.id, 'first_name': u.first_name, 'last_name': u.last_name,
-            'email': u.email, 'is_admin': u.is_admin,
-            'created_at': u.created_at.isoformat(), 'updated_at': u.updated_at.isoformat(),
-        } for u in users], 200
-
-
-@api.route('/<string:user_id>')
+        return 'List is empty', 400
+        
+    
+@api.route('/<user_id>')
 class UserResource(Resource):
-    @api.response(200, 'User details retrieved successfully')
-    @api.response(404, 'User not found')
+    @api.response(400, 'Invalid input')
+    @api.response(200, 'User retrieved successfully')
     def get(self, user_id):
+        user: User = facade.get_user(user_id)
+        if not user:
+            return 'Invalid input', 400
         
-        u = facade.get_user(user_id)
-        if not u:
-            return {'error': 'User not found'}, 404
-        return {
-            'id': u.id, 'first_name': u.first_name, 'last_name': u.last_name,
-            'email': u.email, 'is_admin': u.is_admin,
-            'created_at': u.created_at.isoformat(), 'updated_at': u.updated_at.isoformat(),
-        }, 200
-
-    @api.expect(user_model, validate=False)
-    @api.response(200, 'User updated')
-    @api.response(404, 'User not found')
-    @api.response(400, 'Invalid data')
+        return user.to_dict(), 200  
+    
+    @api.expect(user_model, validate=True)
+    @api.response(400, 'Invalid input')
+    @api.response(200, 'User updated successfully')
+    @jwt_required()
     def put(self, user_id):
+        current_user = get_jwt_identity()
+        user: User = facade.get_user(user_id)
         
-        data = api.payload or {} 
-        try:
-            u = facade.update_user(user_id, data)
-            if not u:
-                return {'error': 'User not found'}, 404
+        if not user:  
+            return {'error': 'User not found'}, 404
+
+        user_data = api.payload
+
+        if user_id != current_user:
+            return {'error': 'You cannot change a different user'}, 403
+
+        if user_data['email'] != user.email:
+            return 'You cannot modify the email.', 400
+
+        if not user.verify_password(user_data['password']):
+            return 'You cannot modify the password.', 400
+
+        new_user = facade.update(user_id, user_data)
+        return new_user.to_dict(), 200
+    
+    @api.response(400, 'Invalid input')
+    @api.response(200, 'Deleted successfully')
+    def delete(self, user_id):
+        deleted_user: User = facade.delete(user_id) 
+        if deleted_user:
             return {
-                'id': u.id, 'first_name': u.first_name, 'last_name': u.last_name,
-                'email': u.email, 'is_admin': u.is_admin,
-                'created_at': u.created_at.isoformat(), 'updated_at': u.updated_at.isoformat(),
+                "message": f"Deleted user: {deleted_user.id} - {deleted_user.first_name} - {deleted_user.email}"
             }, 200
-        except ValueError as e:
-            return {'error': str(e)}, 400
+        else:
+            return {"error": "User not found"}, 404
