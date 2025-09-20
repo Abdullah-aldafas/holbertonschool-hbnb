@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+from sqlalchemy.exc import IntegrityError
+from app.extensions import db
 
 class Repository(ABC):
+
     @abstractmethod
     def add(self, obj):
         pass
@@ -14,7 +17,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def update(self, obj_id, data):
+    def update(self, obj_id, obj):
         pass
 
     @abstractmethod
@@ -22,31 +25,38 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def get_by_attribute(self, attr_name, attr_value):
+    def get_by_attribute(self, att_name, att_value):
         pass
 
 
-class InMemoryRepository(Repository):
-    def __init__(self):
-        self._storage = {}
+class SQLAlchemyRepository(Repository):
+    def __init__(self, model):
+        self.model = model
 
     def add(self, obj):
-        self._storage[obj.id] = obj
+        db.session.add(obj)
+        db.session.commit()
 
     def get(self, obj_id):
-        return self._storage.get(obj_id)
-
+        return self.model.query.get(obj_id)
+    
     def get_all(self):
-        return list(self._storage.values())
-
+        return self.model.query.all()
+    
     def update(self, obj_id, data):
-        obj = self.get(obj_id)
+        obj = self.model.query.get(obj_id)
         if obj:
-            obj.update(data)
+            for key, value in data.items():
+                setattr(obj, key, value)
+            db.session.commit()
+        return self.model.query.get(obj_id)
 
     def delete(self, obj_id):
-        if obj_id in self._storage:
-            del self._storage[obj_id]
-
-    def get_by_attribute(self, attr_name, attr_value):
-        return next((obj for obj in self._storage.values() if getattr(obj, attr_name) == attr_value), None)
+        obj = self.model.query.get(obj_id)
+        if obj:
+            db.session.delete(obj)
+            db.session.commit()
+        return obj
+    
+    def get_by_attribute(self, att_name, att_value):
+        return self.model.query.filter_by(**{att_name: att_value}).first()
