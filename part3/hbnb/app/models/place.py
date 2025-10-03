@@ -1,6 +1,6 @@
 from app.models.basemodel import BaseModel
 from app.extensions import db
-from app.models.users import User
+from app.models.user import User
 
 
 class Place(BaseModel):
@@ -15,9 +15,9 @@ class Place(BaseModel):
 
     @staticmethod
     def init_relationships():
-        from app.models.reviews import Review
-        from app.models.users import User
-        from app.models.amenities import Amenity
+        from app.models.review import Review
+        from app.models.user import User
+        from app.models.amenity import Amenity
         from app.models.place_amenity import PlaceAmenity
         owner = db.relationship(User, backref="place", lazy=True)
         review = db.relationship(Review, backref="place", lazy=True)
@@ -34,7 +34,7 @@ class Place(BaseModel):
         self.owner_id = owner_id
         
     def to_dict(self):
-        from app.service import facade
+        from app.services import facade
         """Convert the Place instance into a dictionary."""
         base_dict = super().to_dict()
         facade_id = self.owner_id

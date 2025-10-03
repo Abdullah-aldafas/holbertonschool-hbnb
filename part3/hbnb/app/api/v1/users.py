@@ -1,7 +1,7 @@
 from flask_restx import fields, Namespace, Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.service import facade
-from app.models.users import User
+from app.services import facade
+from app.models.user import User
 
 api = Namespace('users', description='User operations')
 
@@ -21,17 +21,13 @@ class UserList(Resource):
     @jwt_required()
     def post(self):
         current_user = get_jwt_identity()
-        user_data = api.payload
-
-        if not facade.get_user(current_user).is_admin:
+        if not current_user.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
-        
-        existing_user = facade.get_user_by_email(user_data['email'])
-        if existing_user:
+        user_data = api.payload or {}
+        if facade.get_user_by_email(user_data.get('email')):
             return {'error': 'Email already exists'}, 400
-        
         new_user = facade.add_user(user_data)
-        return new_user.to_dict(), 200
+        return new_user.to_dict(), 201
     
     @api.response(400, 'List is empty')
     @api.response(200, 'List retrieved successfully')
@@ -64,31 +60,24 @@ class UserResource(Resource):
     def put(self, user_id):
         current_user = get_jwt_identity()
         user: User = facade.get_user(user_id)
-        
-        if not user:  
+        if not user:
             return {'error': 'User not found'}, 404
-
-        user_data = api.payload
-
-        if user_id != current_user:
-            return {'error': 'You cannot change a different user'}, 403
-
-        if user_data['email'] != user.email:
-            return 'You cannot modify the email.', 400
-
-        if not user.verify_password(user_data['password']):
-            return 'You cannot modify the password.', 400
-
-        new_user = facade.update(user_id, user_data)
-        return new_user.to_dict(), 200
+        # Non-admin can only update self, without email/password
+        if (user_id != current_user['id']) and not current_user.get('is_admin'):
+            return {'error': 'Unauthorized action'}, 403
+        user_data = api.payload or {}
+        if not current_user.get('is_admin') and ('email' in user_data or 'password' in user_data):
+            return {'error': 'You cannot modify email or password'}, 400
+        new_user = facade.update_user(user_id, user_data) if hasattr(facade, 'update_user') else facade.update(user_id, user_data)
+        return new_user.to_dict() if hasattr(new_user, 'to_dict') else user.to_dict(), 200
     
     @api.response(400, 'Invalid input')
     @api.response(200, 'Deleted successfully')
     def delete(self, user_id):
-        deleted_user: User = facade.delete(user_id) 
-        if deleted_user:
-            return {
-                "message": f"Deleted user: {deleted_user.id} - {deleted_user.first_name} - {deleted_user.email}"
-            }, 200
-        else:
-            return {"error": "User not found"}, 404
+        current_user = get_jwt_identity()
+        if (user_id != current_user['id']) and not current_user.get('is_admin'):
+            return {'error': 'Unauthorized action'}, 403
+        deleted_user: User = facade.delete_user(user_id) if hasattr(facade, 'delete_user') else facade.delete(user_id)
+        if deleted_user or deleted_user is True:
+            return {"message": "User successfully deleted"}, 200
+        return {"error": "User not found"}, 404

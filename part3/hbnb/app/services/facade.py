@@ -1,9 +1,9 @@
 from app.persistence.repository import SQLAlchemyRepository
-from app.models.users import User
-from app.models.amenities import Amenity
-from app.models.places import Place
+from app.models.user import User
+from app.models.amenity import Amenity
+from app.models.place import Place
 from app.models.place_amenity import PlaceAmenity
-from app.models.reviews import Review
+from app.models.review import Review
 
 class HBnBFacade:
     def __init__(self):
@@ -29,6 +29,16 @@ class HBnBFacade:
     
     def delete(self, user_id: str):
         return self.user_repo.delete(user_id)
+
+    # convenience wrappers aligned with API usage
+    def delete_user(self, user_id: str):
+        return self.delete(user_id)
+
+    def create_user(self, data: dict):
+        return self.add_user(data)
+
+    def update_user(self, user_id: str, data: dict):
+        return self.user_repo.update(user_id, data)
     
     def get_user_by_email(self, email: str):
         return self.user_repo.get_by_attribute('email', email)

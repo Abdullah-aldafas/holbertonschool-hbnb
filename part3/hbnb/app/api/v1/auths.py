@@ -1,8 +1,8 @@
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 
-from app.service import facade
-from app.models.users import User
+from app.services import facade
+from app.models.user import User
 
 api = Namespace('auth', description='auth namespace')
 
@@ -26,7 +26,7 @@ class Login(Resource):
 
         if not user or not user.verify_password(credentials['password']):
             return {'error': 'Invalid input'}, 400
-        access_token = create_access_token(identity=str(user.id), additional_claims={"is_admin": user.is_admin})
+        access_token = create_access_token(identity={"id": str(user.id), "is_admin": user.is_admin})
 
         return {'access_token': access_token}, 200
 
@@ -35,8 +35,7 @@ class ProtectedResource(Resource):
     @jwt_required()
     def get(self):
         current_user = get_jwt()
-        is_admin = current_user.get('is_admin', False) 
-
         return {
-            'message': f'Hello, user {current_user}'
+            'message': 'Protected OK',
+            'claims': current_user
         }, 200

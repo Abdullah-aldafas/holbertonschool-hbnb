@@ -1,3 +1,6 @@
 flask
 flask-restx
 flask-bcrypt
+flask-jwt-extended
+flask-sqlalchemy
+psycopg2-binary

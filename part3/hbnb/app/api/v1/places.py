@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.service import facade
+from app.services import facade
 
 api = Namespace('places', description='Place description')
 
@@ -24,8 +24,10 @@ class PlaceList(Resource):
     @jwt_required()
     def post(self):
         current_user = get_jwt_identity()
-        place_data = api.payload
-        owner_id = place_data.get('owner_id')
+        place_data = api.payload or {}
+        # Force owner to be authenticated user
+        owner_id = current_user['id']
+        place_data['owner_id'] = owner_id
         amenities = place_data.get('amenities')
 
        
@@ -33,8 +35,7 @@ class PlaceList(Resource):
             if not facade.get_amenity(amenity_id):
                 return {'error': 'Amenity not exists'}, 400
 
-        if owner_id != current_user:
-            return {'error': 'User is not the owner'}, 403
+        # owner is always the current user; no mismatch check needed
 
         if not facade.get_user(owner_id):
             return {'error': 'Invalid owner'}, 400
@@ -49,7 +50,7 @@ class PlaceList(Resource):
             return {'error': 'Invalid longitude'}, 400
 
         new_place = facade.add_place(place_data)
-        return new_place.to_dict(), 200
+        return new_place.to_dict(), 201
 
         
     @api.response(400, 'List is empty')
@@ -82,17 +83,15 @@ class PlaceResource(Resource):
     @jwt_required()
     def put(self, place_id):
         current_user = get_jwt_identity()
-        place_data = api.payload
-        owner_id = place_data.get('owner_id')
-
-        if owner_id != current_user:
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Invalid id'}, 400
+        if (place.owner_id != current_user['id']) and not current_user.get('is_admin'):
             return {'error': 'Unauthorized action'}, 403
+        place_data = api.payload or {}
         
         if not facade.get_user(owner_id):
            return {'error': 'Invalid owner'}, 400
-        
-        if not facade.get_place(place_id):
-            return {'error': 'Invalid id'}, 400
         
         new_place = facade.update_place(place_id, place_data)
         return new_place.to_dict()

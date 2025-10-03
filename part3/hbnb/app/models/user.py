@@ -1,7 +1,7 @@
 
 from app.models.basemodel import BaseModel
 from app.extensions import db
-import app
+from app import bcrypt
 
 class User(BaseModel):
     __tablename__ = 'users'
@@ -27,10 +27,10 @@ class User(BaseModel):
         self.is_admin = is_admin
 
     def hash_password(self, password):
-        return app.bcrypt.generate_password_hash(password).decode('utf-8')
+        return bcrypt.generate_password_hash(password).decode('utf-8')
     
     def verify_password(self, password):
-        return app.bcrypt.check_password_hash(self.password, password)
+        return bcrypt.check_password_hash(self.password, password)
 
     def to_dict(self):
         """Convert the User instance into a dictionary."""
