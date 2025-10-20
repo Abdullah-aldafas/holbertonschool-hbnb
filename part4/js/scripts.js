@@ -315,7 +315,7 @@ function displayPlaceDetails(place) {
     const placeDetails = document.getElementById('place-details');
     if (!placeDetails) return;
     
-    const amenities = place.amenities ? place.amenities.map(a => a.name).join(', ') : 'None';
+    const amenities = place.amenities ? (Array.isArray(place.amenities) ? place.amenities.join(', ') : 'None') : 'None';
     
     placeDetails.innerHTML = `
         <div class="place-info">
@@ -393,7 +393,7 @@ function displayReviews(reviews) {
         const reviewCard = document.createElement('div');
         reviewCard.className = 'review-card';
         reviewCard.innerHTML = `
-            <h4>${review.user_id?.first_name || 'Anonymous'} ${review.user_id?.last_name || ''}</h4>
+            <h4>${review.user_name || 'Anonymous'}</h4>
             <div class="rating">${'★'.repeat(review.rating || 0)}</div>
             <p>${review.text || 'No review text'}</p>
         `;

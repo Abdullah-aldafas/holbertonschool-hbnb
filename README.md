@@ -44,6 +44,6 @@ The documentation provides a detailed blueprint of the application's architectur
 - This documentation will guide the implementation in later parts of the project.
 
 ## Author
-- **Farah** — [@farahmzi](https://github.com/farahmzi)
 - **Abdullah** — [@Abdullah-aldafas](https://github.com/Abdullah-aldafas)
+- **Farah** — [@farahmzi](https://github.com/farahmzi)
 - **Sara** - [@sarunh10](https://github.com/sarunh10)

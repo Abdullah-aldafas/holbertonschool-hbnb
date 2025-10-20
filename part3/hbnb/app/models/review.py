@@ -27,11 +27,21 @@ class Review(BaseModel):
 
     def to_dict(self):
         """Convert the Review instance into a dictionary."""
+        from app.services import facade
+        
         base_dict = super().to_dict()
+        
+        # Get user information
+        user = facade.get_user(self.user_id)
+        user_name = "Anonymous"
+        if user:
+            user_name = f"{user.first_name} {user.last_name}"
+        
         base_dict.update({
             "text": self.text,
             "rating": self.rating,
             "place_id": self.place_id,
-            "user_id": self.user_id
+            "user_id": self.user_id,
+            "user_name": user_name
         })
         return base_dict

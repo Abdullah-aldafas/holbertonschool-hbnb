@@ -35,16 +35,36 @@ class Place(BaseModel):
         
     def to_dict(self):
         from app.services import facade
+        from app.models.place_amenity import place_amenity
+        from app.models.amenity import Amenity
         """Convert the Place instance into a dictionary."""
         base_dict = super().to_dict()
         facade_id = self.owner_id
         owner: User = facade.get_user(facade_id)
+        
+        # Get amenities for this place directly from database
+        amenities = []
+        try:
+            # Query amenities directly using the association table
+            amenity_ids = db.session.execute(
+                db.select(place_amenity.c.amenity_id).where(place_amenity.c.place_id == self.id)
+            ).scalars().all()
+            
+            for amenity_id in amenity_ids:
+                amenity = db.session.get(Amenity, amenity_id)
+                if amenity:
+                    amenities.append(amenity.name)
+        except Exception as e:
+            print(f"Error getting amenities: {e}")
+            amenities = []
+        
         base_dict.update({
             "title": self.title,
             "description": self.description,
             "price": self.price,
             "latitude": self.latitude,
             "longitude": self.longitude,
-            "owner_id": owner.to_dict()
+            "owner_id": owner.to_dict() if owner else self.owner_id,
+            "amenities": amenities
         })
         return base_dict

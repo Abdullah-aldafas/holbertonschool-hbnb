@@ -90,7 +90,7 @@ class PlaceResource(Resource):
             return {'error': 'Unauthorized action'}, 403
         place_data = api.payload or {}
         
-        if not facade.get_user(owner_id):
+        if not facade.get_user(owner_id):  # pyright: ignore[reportUndefinedVariable]
            return {'error': 'Invalid owner'}, 400
         
         new_place = facade.update_place(place_id, place_data)
