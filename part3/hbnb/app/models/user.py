@@ -19,7 +19,7 @@ class User(BaseModel):
         place = db.relationship(Place, backref="user", lazy=True)
         review = db.relationship(Review, backref="user", lazy=True)
     
-    def __init__(self, first_name, last_name, email, password, is_admin):
+    def __init__(self, first_name, last_name, email, password, is_admin=False):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email

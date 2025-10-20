@@ -93,7 +93,9 @@ async function makeApiRequest(endpoint, options = {}) {
     let lastError = null;
     for (const base of basesToTry) {
         try {
+            console.log(`Trying API request to: ${base}${endpoint}`);
             const response = await fetch(`${base}${endpoint}`, finalOptions);
+            console.log(`Response status: ${response.status}`);
             if (!response.ok) {
                 if (response.status === 401) {
                     deleteCookie('token');
@@ -107,8 +109,11 @@ async function makeApiRequest(endpoint, options = {}) {
             // Success - remember working base
             apiBaseUrl = base;
             localStorage.setItem('apiBaseUrl', apiBaseUrl);
-            return await response.json();
+            const result = await response.json();
+            console.log('API Response:', result);
+            return result;
         } catch (err) {
+            console.error(`Error with base ${base}:`, err);
             lastError = err;
             // try next base
         }
@@ -128,32 +133,65 @@ async function loginUser(email, password) {
         if (data && data.access_token) {
             setCookie('token', data.access_token);
             currentToken = data.access_token;
-            window.location.href = 'index.html';
+            showSuccess('Login successful!');
+            // Load places after successful login
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
         } else {
             showError('Login failed: Invalid response from server');
         }
     } catch (error) {
-        // Fallback for local demo when backend is not running
-        // or when auth endpoint is unavailable (e.g., Part 3 API down)
-        setCookie('token', 'dev-local-token');
-        currentToken = 'dev-local-token';
-        showSuccess('Logged in locally (demo mode).');
-        window.location.href = 'index.html';
+        console.error('Login error:', error);
+        showError('Login failed: ' + (error.message || 'Unknown error'));
+    }
+}
+
+// Register functionality
+async function registerUser(firstName, lastName, email, password) {
+    try {
+        const data = await makeApiRequest('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ 
+                first_name: firstName, 
+                last_name: lastName, 
+                email: email, 
+                password: password 
+            })
+        });
+        
+        if (data && data.access_token) {
+            setCookie('token', data.access_token);
+            currentToken = data.access_token;
+            showSuccess('Registration successful! You are now logged in.');
+            window.location.href = 'index.html';
+        } else {
+            showError('Registration failed: Invalid response from server');
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showError('Registration failed: ' + (error.message || 'Unknown error'));
     }
 }
 
 // Places functionality
 async function fetchPlaces() {
     try {
+        console.log('Fetching places...');
         const places = await makeApiRequest('/places/');
-        if (places) {
+        console.log('Places received:', places);
+        if (places && Array.isArray(places)) {
             displayPlaces(places);
+        } else {
+            console.log('No places data or invalid format');
+            displaySamplePlaces();
         }
     } catch (error) {
         console.error('Failed to fetch places:', error);
         // Show sample data on error
         displaySamplePlaces();
     }
+}
 
 function displaySamplePlaces() {
     const placesList = document.getElementById('places-list');
@@ -366,19 +404,28 @@ function displayReviews(reviews) {
 // Review functionality
 async function submitReview(placeId, reviewData) {
     try {
+        console.log('Submitting review:', { placeId, reviewData });
+        
         const result = await makeApiRequest('/reviews/', {
             method: 'POST',
             body: JSON.stringify({
-                ...reviewData,
+                text: reviewData.text,
+                rating: reviewData.rating,
                 place_id: placeId
             })
         });
         
+        console.log('Review result:', result);
+        
         if (result) {
             showSuccess('Review submitted successfully!');
-            document.getElementById('review-form').reset();
+            // Reload the page to show the new review
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
     } catch (error) {
+        console.error('Review submission error:', error);
         showError('Failed to submit review: ' + error.message);
     }
 }
@@ -387,6 +434,14 @@ async function submitReview(placeId, reviewData) {
 document.addEventListener('DOMContentLoaded', () => {
     // Check authentication on all pages
     checkAuthentication();
+    
+    // Load places on index page
+    if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+        // Wait a bit then load places
+        setTimeout(() => {
+            fetchPlaces();
+        }, 500);
+    }
     
     // Login form
     const loginForm = document.getElementById('login-form');
@@ -399,6 +454,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
             
             await loginUser(email, password);
+        });
+    }
+
+    // Register form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            hideMessages();
+            
+            const firstName = document.getElementById('first_name').value;
+            const lastName = document.getElementById('last_name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            await registerUser(firstName, lastName, email, password);
         });
     }
     

@@ -18,11 +18,7 @@ class UserList(Resource):
     @api.expect(user_model, validate=True)
     @api.response(400, 'Email already exists')
     @api.response(200, 'User added successfully')
-    @jwt_required()
     def post(self):
-        current_user = get_jwt_identity()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
         user_data = api.payload or {}
         if facade.get_user_by_email(user_data.get('email')):
             return {'error': 'Email already exists'}, 400

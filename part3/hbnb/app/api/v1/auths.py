@@ -11,6 +11,13 @@ login_model = api.model('Login',{
     'password': fields.String(required=True, description="User Password")
 })
 
+register_model = api.model('Register',{
+    'first_name': fields.String(required=True, description="User First Name"),
+    'last_name': fields.String(required=True, description="User Last Name"),
+    'email': fields.String(required=True, description="User Email"),
+    'password': fields.String(required=True, description="User Password")
+})
+
 @api.route('/login')
 class Login(Resource):
     @api.expect(login_model)
@@ -29,6 +36,31 @@ class Login(Resource):
         access_token = create_access_token(identity={"id": str(user.id), "is_admin": user.is_admin})
 
         return {'access_token': access_token}, 200
+
+@api.route('/register')
+class Register(Resource):
+    @api.expect(register_model)
+    @api.response(400, 'Email already exists or invalid input')
+    @api.response(201, 'User registered successfully')
+    def post(self):
+        user_data = api.payload
+
+        if not user_data or not all(key in user_data for key in ['first_name', 'last_name', 'email', 'password']):
+            return {'error': 'Missing required fields'}, 400
+
+        if facade.get_user_by_email(user_data['email']):
+            return {'error': 'Email already exists'}, 400
+
+        try:
+            new_user = facade.add_user(user_data)
+            access_token = create_access_token(identity={"id": str(new_user.id), "is_admin": new_user.is_admin})
+            return {
+                'message': 'User registered successfully',
+                'access_token': access_token,
+                'user': new_user.to_dict()
+            }, 201
+        except Exception as e:
+            return {'error': 'Registration failed'}, 400
 
 @api.route('/protected')
 class ProtectedResource(Resource):

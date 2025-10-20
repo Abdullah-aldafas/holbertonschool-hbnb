@@ -9,13 +9,18 @@ bcrypt = Bcrypt()
 jwt = JWTManager()
 
 
-def create_app(config_class="config.DevelopmentConfig"):
+def create_app(config_class="development"):
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    from config import config
+    app.config.from_object(config[config_class])
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
-    CORS(app, origins=['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:3000', 'http://localhost:3000'])
+    CORS(app, 
+         origins=['*'], 
+         supports_credentials=True,
+         allow_headers=['Content-Type', 'Authorization'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
     
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API', doc='/api/v1/')
 

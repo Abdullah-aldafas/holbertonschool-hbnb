@@ -64,6 +64,9 @@ def seed_data():
         db.session.add(apartment)
         db.session.add(penthouse)
         
+        # Commit first to get IDs
+        db.session.commit()
+        
         # Add place-amenity relationships via association table
         db.session.execute(place_amenity.insert().values(place_id=villa.id, amenity_id=wifi.id))
         db.session.execute(place_amenity.insert().values(place_id=villa.id, amenity_id=pool.id))
@@ -73,6 +76,28 @@ def seed_data():
         db.session.execute(place_amenity.insert().values(place_id=penthouse.id, amenity_id=ac.id))
         
         db.session.commit()
+        
+        # Create sample reviews
+        from app.models.review import Review
+        
+        review1 = Review(
+            text='Great location and very clean. Will definitely come back again!',
+            rating=4,
+            place_id=villa.id,
+            user_id=admin_user.id
+        )
+        
+        review2 = Review(
+            text='Perfect for business trips. Excellent service and amenities.',
+            rating=5,
+            place_id=apartment.id,
+            user_id=admin_user.id
+        )
+        
+        db.session.add(review1)
+        db.session.add(review2)
+        db.session.commit()
+        
         print('Data added successfully!')
 
 if __name__ == '__main__':

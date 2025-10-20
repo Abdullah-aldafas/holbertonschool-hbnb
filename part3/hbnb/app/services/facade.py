@@ -13,10 +13,14 @@ class HBnBFacade:
         self.place_amenity_repo = SQLAlchemyRepository(PlaceAmenity)
         self.review_repo = SQLAlchemyRepository(Review)
 
-    def add_user(self, user):
-        user = User(**user)
-        self.user_repo.add(user)
-        return user
+    def add_user(self, user_data):
+        try:
+            user = User(**user_data)
+            self.user_repo.add(user)
+            return user
+        except Exception as e:
+            print(f"Error adding user: {e}")
+            raise e
 
     def get_user(self, user_id: str):
         return self.user_repo.get(user_id)
@@ -86,11 +90,14 @@ class HBnBFacade:
     def delete_place(self, place_id):
         return self.place_repo.delete(place_id)
     
-    def add_review(self, review):
-        review = Review(**review)
-        self.review_repo.add(review)
-
-        return review
+    def add_review(self, review_data):
+        try:
+            review = Review(**review_data)
+            self.review_repo.add(review)
+            return review
+        except Exception as e:
+            print(f"Error adding review: {e}")
+            raise e
 
     def get_review(self, review_id):
         return self.review_repo.get(review_id)

@@ -20,21 +20,18 @@ class Review(BaseModel):
 
     def __init__(self, text, rating, place_id, user_id):
         super().__init__()
-        self.text= text
+        self.text = text
         self.rating = rating
         self.place_id = place_id
         self.user_id = user_id
 
     def to_dict(self):
-        from app.services import facade
-        """Convert the User instance into a dictionary."""
+        """Convert the Review instance into a dictionary."""
         base_dict = super().to_dict()
-        user: User = facade.get_user(self.user_id)
-        place: Place = facade.get_place(self.place_id)
         base_dict.update({
             "text": self.text,
             "rating": self.rating,
-            "place_id": place.to_dict(),
-            "user_id": user.to_dict()
+            "place_id": self.place_id,
+            "user_id": self.user_id
         })
         return base_dict
