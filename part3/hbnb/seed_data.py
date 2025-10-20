@@ -3,9 +3,7 @@ from app.extensions import db
 from app.models.user import User
 from app.models.place import Place
 from app.models.amenity import Amenity
-from app.models.place_amenity import PlaceAmenity
-from flask_bcrypt import Bcrypt
-import uuid
+from app.models.place_amenity import place_amenity
 
 def seed_data():
     app = create_app()
@@ -13,25 +11,25 @@ def seed_data():
         # Create tables if they don't exist
         db.create_all()
         
-        # Create admin user
-        bcrypt = Bcrypt()
+        # Create admin user (BaseModel generates id; User hashes password)
         admin_user = User(
-            id=str(uuid.uuid4()),
             first_name='Admin',
             last_name='HBnB',
             email='admin@hbnb.io',
-            password=bcrypt.generate_password_hash('admin1234').decode('utf-8'),
+            password='admin1234',
             is_admin=True
         )
+        # Persist admin first to ensure owner_id is available
+        db.session.add(admin_user)
+        db.session.flush()  # assigns generated id
         
         # Create amenities
-        wifi = Amenity(id=str(uuid.uuid4()), name='WiFi')
-        pool = Amenity(id=str(uuid.uuid4()), name='Swimming Pool')
-        ac = Amenity(id=str(uuid.uuid4()), name='Air Conditioning')
+        wifi = Amenity(name='WiFi')
+        pool = Amenity(name='Swimming Pool')
+        ac = Amenity(name='Air Conditioning')
         
         # Create places
         villa = Place(
-            id=str(uuid.uuid4()),
             title='Beautiful Villa',
             description='A stunning villa with amazing views',
             price=150.00,
@@ -41,7 +39,6 @@ def seed_data():
         )
         
         apartment = Place(
-            id=str(uuid.uuid4()),
             title='Cozy Apartment',
             description='A comfortable apartment in the city center',
             price=80.00,
@@ -51,7 +48,6 @@ def seed_data():
         )
         
         penthouse = Place(
-            id=str(uuid.uuid4()),
             title='Luxury Penthouse',
             description='An exclusive penthouse with premium amenities',
             price=300.00,
@@ -61,7 +57,6 @@ def seed_data():
         )
         
         # Add to database
-        db.session.add(admin_user)
         db.session.add(wifi)
         db.session.add(pool)
         db.session.add(ac)
@@ -69,13 +64,13 @@ def seed_data():
         db.session.add(apartment)
         db.session.add(penthouse)
         
-        # Add place-amenity relationships
-        db.session.add(PlaceAmenity(place_id=villa.id, amenity_id=wifi.id))
-        db.session.add(PlaceAmenity(place_id=villa.id, amenity_id=pool.id))
-        db.session.add(PlaceAmenity(place_id=apartment.id, amenity_id=wifi.id))
-        db.session.add(PlaceAmenity(place_id=penthouse.id, amenity_id=wifi.id))
-        db.session.add(PlaceAmenity(place_id=penthouse.id, amenity_id=pool.id))
-        db.session.add(PlaceAmenity(place_id=penthouse.id, amenity_id=ac.id))
+        # Add place-amenity relationships via association table
+        db.session.execute(place_amenity.insert().values(place_id=villa.id, amenity_id=wifi.id))
+        db.session.execute(place_amenity.insert().values(place_id=villa.id, amenity_id=pool.id))
+        db.session.execute(place_amenity.insert().values(place_id=apartment.id, amenity_id=wifi.id))
+        db.session.execute(place_amenity.insert().values(place_id=penthouse.id, amenity_id=wifi.id))
+        db.session.execute(place_amenity.insert().values(place_id=penthouse.id, amenity_id=pool.id))
+        db.session.execute(place_amenity.insert().values(place_id=penthouse.id, amenity_id=ac.id))
         
         db.session.commit()
         print('Data added successfully!')

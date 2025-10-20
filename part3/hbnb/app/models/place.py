@@ -1,6 +1,7 @@
 from app.models.basemodel import BaseModel
 from app.extensions import db
 from app.models.user import User
+from app.models.place_amenity import place_amenity
 
 
 class Place(BaseModel):
@@ -18,10 +19,9 @@ class Place(BaseModel):
         from app.models.review import Review
         from app.models.user import User
         from app.models.amenity import Amenity
-        from app.models.place_amenity import PlaceAmenity
         owner = db.relationship(User, backref="place", lazy=True)
         review = db.relationship(Review, backref="place", lazy=True)
-        amenities = db.relationship(Amenity, secondary=PlaceAmenity, backref=db.backref('place', lazy=True), lazy=True)
+        amenities = db.relationship(Amenity, secondary=place_amenity, backref=db.backref('place', lazy=True), lazy=True)
     
 
     def __init__(self, title, description, price, latitude, longitude, owner_id):
